@@ -5,50 +5,41 @@ contract Splitter {
     address public bob;
     address public carol;
     address public sender;
-    bool    private isMoneySend;
 
-    modifier validateAddresses(address _address1, address _address2) {
-        require(toBeValidAddress(_address1));
-        require(toBeValidAddress(_address2));
+    modifier onlyOwner() {
+        require(msg.sender == sender);
         _;
     }
 
-    function toBeValidAddress(address _address) constant private returns(bool isValid) {
-        return _address != 0x00000000000000000000000000000000000000;
+    modifier onlyPositiveSend() {
+        require(msg.value > 0);
+        _;
     }
-   
-    function Splitter(address bobsAddress, address carolsAddress) 
-        public validateAddresses(bobsAddress, carolsAddress)
-    {
+
+    function Splitter(address bobsAddress, address carolsAddress) public {
+        validateAddress(bobsAddress);
+        validateAddress(carolsAddress);
+
         bob = bobsAddress;
         carol = carolsAddress;
         sender = msg.sender;
-        isMoneySend = false;
     }
 
-    function sendMoney() public payable returns(bool isSuccessful) {
-        if (msg.value <= 0) {
-            throw;
-        }
-
-        sendHalfMoneyTo(msg.value, bob);
-        isMoneySend = false;
-        sendHalfMoneyTo(msg.value, carol);
-
-        return isMoneySend;
+    function validateAddress(address _address) private constant {
+        require(_address != address(0));
     }
 
-    function sendHalfMoneyTo(uint money, address moneyTaker) private {
-
-        if (isMoneySend) {
-            throw;
+    function splitMoney() public payable onlyOwner onlyPositiveSend {
+        if (msg.value % 2 == 0) {
+            transferMoney(msg.value / 2);
+        } else {
+            transferMoney((msg.value - 1) / 2);
         }
-        isMoneySend = true;
+    }
 
-        if (!moneyTaker.send(money / 2)) {
-            isMoneySend = false;
-            throw;
-        } 
+    function transferMoney(uint money) private {
+        bob.transfer(money);
+        carol.transfer(money);
     }
 
     function destroy() public returns (bool) {
