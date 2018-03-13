@@ -1,4 +1,4 @@
-{
+var compiledSplitter = {
   "contract_name": "Splitter",
   "abi": [
     {

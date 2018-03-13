@@ -1,8 +1,47 @@
 <html>
     <head>
-
+        <script src="./libs/web3.js"></script>
+        <script src="./contracts/compiledSplitter.js"></script>
+        <script src="./src/splitter.js"></script>
+        <link rel="stylesheet" type="text/css" href="./src/buttonsStyle.css">
     </head>
-    <body>
-
+    <body bgcolor="#b2ac9d">
+        
+        <div id="contract">
+            <div>
+                My Address: <input type="text" id="myAddress"/>
+            </div>
+            <div>
+                Bob's Address: <input type="text" id="bobsAddress"/>
+            </div>
+            <div>
+                Carol's Address: <input type="text" id="carolsAddress" />
+            </div>
+            <a class="my-button" onclick="Splitter.createSplitter()">Create</a>
+        </div>   
+        <br><br>
+        <div id="moneysplitting">
+            <div>
+                <input type="number" id="moneyAmount"/>
+                <select id="currencyType">
+                    <option value="ether">Ether</option>
+                    <option value="wei">Wei</option>
+                </select>
+            </div>
+            <a class="my-button" onclick="Splitter.splitMoney()">Split Money</a>
+        </div>
+        <br><br>
+        <div id="balanceButtons">
+                <a class="my-button" onclick="Splitter.getBalance({balanceId: 'myBalance', balanceOf: 'sender'})">My Balance</a>
+                <a class="my-button" onclick="Splitter.getBalance({balanceId: 'bobBalance', balanceOf: 'bob'})">Bob's Balance</a>
+                <a class="my-button" onclick="Splitter.getBalance({balanceId: 'carolBalance', balanceOf: 'carol'})">Carol's Balance</a>
+                <a class="my-button" onclick="Splitter.getBalance({balanceId: 'contractBalance', balanceOf: 'address'})">Contract's Balance</a>
+        </div>
+        <div id="BalanceLabels">
+            <h3 class="my-label">My Balance: </h3><h3 id="myBalance" class="my-label"></h3>
+            <h3 class="my-label">Bob's Balance: </h3><h3 id="bobBalance" class="my-label"></h3>
+            <h3 class="my-label">Carol's Balance: </h3><h3 id="carolBalance" class="my-label"></h3>
+            <h3 class="my-label">Contract's Balance: </h3><h3 id="contractBalance" class="my-label"></h3>
+        </div>
     </body>
 </html>
