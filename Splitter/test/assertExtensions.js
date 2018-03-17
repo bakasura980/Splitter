@@ -9,5 +9,15 @@
         }
         assert.fail('Expected throw not received');
     }
+
+    assert.expectEvent = async function(promise, eventParameters) {
+        let event = await promise;
+        assert.equal(event.logs.length, 1);
+
+        let eventParamsNames = Object.keys(eventParameters);
+        eventParamsNames.forEach(function(parameter){
+            assert.equal(event.logs[0].args[parameter], eventParameters[parameter]);
+        });
+    }
 })();
 

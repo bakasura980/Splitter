@@ -1,18 +1,24 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.16;
 
 contract Splitter {
 
     address public bob;
     address public carol;
-    address public sender;
+    address public owner;
+    mapping(address => uint) public moneyBuffer;
+
+    event LogInit(address contractAddress);
+    event LogSplittedMoney(uint splittedMoney);
+    event LogWithdraw(address beneficiary, uint amount);
+    event LogDestruction(address destroyer);
 
     modifier onlyOwner() {
-        require(msg.sender == sender);
+        require(msg.sender == owner);
         _;
     }
 
-    modifier onlyPositiveSend() {
-        require(msg.value > 0);
+    modifier onlyPositive(uint value) {
+        require(value > 0);
         _;
     }
 
@@ -22,25 +28,37 @@ contract Splitter {
 
         bob = bobsAddress;
         carol = carolsAddress;
-        sender = msg.sender;
+        owner = msg.sender;
+
+        LogInit(this);
     }
 
-    function splitMoney() public payable onlyOwner onlyPositiveSend {
+    function splitMoney() public payable onlyOwner onlyPositive(msg.value) {
         if (msg.value % 2 == 0) {
-            transferMoney(msg.value / 2);
+            loadSplittedMoney(msg.value / 2);
         } else {
-            transferMoney((msg.value - 1) / 2);
+            moneyBuffer[owner] += 1;
+            loadSplittedMoney((msg.value - 1) / 2); 
         }
+
+        LogSplittedMoney(msg.value % 2 == 0 ? msg.value / 2 : (msg.value - 1) / 2);
     }
 
-    function transferMoney(uint money) private {
-        bob.transfer(money);
-        carol.transfer(money);
+    function loadSplittedMoney(uint splittedMoney) private {
+        moneyBuffer[bob] += splittedMoney;
+        moneyBuffer[carol] += splittedMoney;
     }
 
-    function destroy() public returns (bool) {
-        require(msg.sender == sender);
-        selfdestruct(sender);
-        return true;
+    function withdraw() public onlyPositive(moneyBuffer[msg.sender]) {
+        uint amount = moneyBuffer[msg.sender];
+        moneyBuffer[msg.sender] = 0;
+        msg.sender.transfer(amount);
+
+        LogWithdraw(msg.sender, amount);
+    }
+
+    function destroy() public onlyOwner {
+        LogDestruction(msg.sender);
+        selfdestruct(msg.sender);
     }
 }
